@@ -8,9 +8,19 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import br.uff.gerenciadoreventos.repository.AdministradorRepository;
+import br.uff.gerenciadoreventos.security.JwtAuthorizationFilter;
+import br.uff.gerenciadoreventos.security.JwtUtil;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtUtil jwtUtil;
+    private final AdministradorRepository administradorRepository;
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -28,7 +38,18 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/administradores").permitAll()
-                        .anyRequest().authenticated());
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .anyRequest().authenticated())
+
+                .formLogin(form -> form.disable())
+
+                .httpBasic(basic -> basic.disable())
+
+                .addFilterBefore(
+                        new JwtAuthorizationFilter(
+                                jwtUtil,
+                                administradorRepository),
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
