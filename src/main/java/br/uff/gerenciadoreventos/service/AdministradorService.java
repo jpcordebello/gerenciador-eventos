@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import br.uff.gerenciadoreventos.dto.AdministradorRequest;
 import br.uff.gerenciadoreventos.dto.AdministradorResponse;
+import br.uff.gerenciadoreventos.exception.EmailJaCadastradoException;
 import br.uff.gerenciadoreventos.model.Administrador;
 import br.uff.gerenciadoreventos.repository.AdministradorRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class AdministradorService {
     public AdministradorResponse cadastrar(AdministradorRequest request) {
 
         if (administradorRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado");
+            throw new EmailJaCadastradoException("Email já cadastrado");
         }
 
         Administrador administrador = new Administrador(

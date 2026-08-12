@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import br.uff.gerenciadoreventos.dto.LoginRequest;
 import br.uff.gerenciadoreventos.dto.LoginResponse;
+import br.uff.gerenciadoreventos.exception.CredenciaisInvalidasException;
 import br.uff.gerenciadoreventos.model.Administrador;
 import br.uff.gerenciadoreventos.repository.AdministradorRepository;
 import br.uff.gerenciadoreventos.security.JwtUtil;
@@ -22,10 +23,16 @@ public class LoginService {
 
         Administrador administrador = administradorRepository
                 .findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Email ou senha inválidos"));
+                .orElseThrow(() ->
+                        new CredenciaisInvalidasException(
+                                "Email ou senha inválidos"));
 
-        if (!passwordEncoder.matches(request.getSenha(), administrador.getSenha())) {
-            throw new IllegalArgumentException("Email ou senha inválidos");
+        if (!passwordEncoder.matches(
+                request.getSenha(),
+                administrador.getSenha())) {
+
+            throw new CredenciaisInvalidasException(
+                    "Email ou senha inválidos");
         }
 
         String token = jwtUtil.gerarToken(administrador.getEmail());

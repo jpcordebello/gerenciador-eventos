@@ -11,6 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import br.uff.gerenciadoreventos.repository.AdministradorRepository;
+import br.uff.gerenciadoreventos.security.JwtAuthenticationEntryPoint;
 import br.uff.gerenciadoreventos.security.JwtAuthorizationFilter;
 import br.uff.gerenciadoreventos.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final AdministradorRepository administradorRepository;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -34,12 +36,31 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/administradores").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/eventos/**")
+                        .permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/administradores")
+                        .permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/auth/login")
+                        .permitAll()
+
+                        .anyRequest()
+                        .authenticated())
+
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(
+                                jwtAuthenticationEntryPoint))
 
                 .formLogin(form -> form.disable())
 
