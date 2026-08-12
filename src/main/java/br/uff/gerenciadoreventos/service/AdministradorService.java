@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import br.uff.gerenciadoreventos.dto.AdministradorRequest;
 import br.uff.gerenciadoreventos.dto.AdministradorResponse;
 import br.uff.gerenciadoreventos.exception.EmailJaCadastradoException;
+import br.uff.gerenciadoreventos.exception.RecursoNaoEncontradoException;
 import br.uff.gerenciadoreventos.model.Administrador;
 import br.uff.gerenciadoreventos.repository.AdministradorRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +28,35 @@ public class AdministradorService {
                 null,
                 request.getNome(),
                 request.getEmail(),
-                passwordEncoder.encode(request.getSenha()));
+                passwordEncoder.encode(request.getSenha())
+        );
 
-        Administrador salvo = administradorRepository.save(administrador);
+        Administrador salvo =
+                administradorRepository.save(administrador);
+
+        return converterParaResponse(salvo);
+    }
+
+    public AdministradorResponse buscarPorEmail(String email) {
+
+        Administrador administrador = administradorRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException(
+                                "Administrador não encontrado"
+                        )
+                );
+
+        return converterParaResponse(administrador);
+    }
+
+    private AdministradorResponse converterParaResponse(
+            Administrador administrador) {
 
         return new AdministradorResponse(
-                salvo.getId(),
-                salvo.getNome(),
-                salvo.getEmail());
+                administrador.getId(),
+                administrador.getNome(),
+                administrador.getEmail()
+        );
     }
 }
