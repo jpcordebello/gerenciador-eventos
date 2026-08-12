@@ -1,0 +1,131 @@
+.splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(circle at 70% 30%,
+            rgba(109, 126, 255, 0.35),
+            transparent 35%),
+        linear-gradient(135deg, #2935ad, #5667f5);
+
+    color: white;
+
+    animation: splashEntrada 0.45s ease;
+}
+
+.splash-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+
+    animation: splashLogo 0.7s ease;
+}
+
+.splash-icone {
+    display: grid;
+    place-items: center;
+
+    width: 82px;
+    height: 82px;
+
+    border-radius: 25px;
+
+    background: white;
+    color: #5667f5;
+
+    font-size: 42px;
+    font-weight: 800;
+
+    box-shadow: 0 20px 55px rgba(12, 18, 71, 0.3);
+}
+
+.splash-texto {
+    text-align: center;
+}
+
+.splash-texto>span {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: rgba(255, 255, 255, 0.7);
+
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.splash-texto h1 {
+    font-size: clamp(32px, 5vw, 46px);
+    letter-spacing: -0.04em;
+}
+
+.splash-texto strong {
+    color: #a9f3f4;
+}
+
+.splash-loader {
+    width: 170px;
+    height: 3px;
+
+    margin-top: 42px;
+
+    overflow: hidden;
+
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.splash-loader span {
+    display: block;
+
+    width: 45%;
+    height: 100%;
+
+    border-radius: inherit;
+
+    background: white;
+
+    animation: splashCarregando 0.9s ease-in-out infinite;
+}
+
+@keyframes splashLogo {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes splashCarregando {
+    from {
+        transform: translateX(-110%);
+    }
+
+    to {
+        transform: translateX(330%);
+    }
+}
+
+@keyframes splashEntrada {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

@@ -1,0 +1,153 @@
+.confirmacao-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 7000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background: rgba(22, 31, 78, 0.42);
+
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.confirmacao-modal {
+    width: min(430px, 95vw);
+
+    padding: 38px;
+
+    border-radius: 24px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 30px 90px rgba(26, 35, 85, 0.25);
+
+    text-align: center;
+
+    animation: confirmacaoEntrada 0.24s ease;
+}
+
+.confirmacao-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 58px;
+    height: 58px;
+
+    margin: 0 auto 20px;
+
+    border-radius: 18px;
+
+    background: #fff1f1;
+    color: #dc5656;
+}
+
+.confirmacao-icone svg {
+    width: 25px;
+    height: 25px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.confirmacao-tag {
+    display: inline-flex;
+
+    margin-bottom: 11px;
+    padding: 6px 11px;
+
+    border-radius: 999px;
+
+    background: #fff2f2;
+    color: #d55757;
+
+    font-size: 10px;
+    font-weight: 750;
+
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.confirmacao-modal h2 {
+    margin: 0 0 11px;
+
+    color: #20263e;
+
+    font-size: 27px;
+
+    letter-spacing: -0.03em;
+}
+
+.confirmacao-modal p {
+    margin: 0;
+
+    color: #8d92a4;
+
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.confirmacao-modal p strong {
+    color: #44495e;
+}
+
+.confirmacao-acoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 10px;
+
+    margin-top: 30px;
+}
+
+.confirmacao-acoes button {
+    height: 45px;
+
+    border-radius: 12px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.confirmacao-cancelar {
+    border: 1px solid #e1e4ee;
+
+    background: #ffffff;
+    color: #686d80;
+}
+
+.confirmacao-excluir {
+    border: 0;
+
+    background: #df5959;
+    color: #ffffff;
+}
+
+.confirmacao-acoes button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+@keyframes confirmacaoEntrada {
+    from {
+        opacity: 0;
+        transform: translateY(13px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

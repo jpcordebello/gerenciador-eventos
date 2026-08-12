@@ -1,0 +1,289 @@
+.form-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 28px;
+
+    background: rgba(22, 31, 78, 0.42);
+
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.form-modal {
+    position: relative;
+
+    width: min(760px, 96vw);
+    max-height: 92vh;
+
+    padding: 42px 46px 38px;
+
+    overflow-y: auto;
+
+    border-radius: 26px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 30px 90px rgba(26, 35, 85, 0.25);
+
+    animation: eventoFormEntrada 0.25s ease;
+}
+
+.form-modal-fechar {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: #f3f5fb;
+    color: #33394f;
+
+    cursor: pointer;
+}
+
+.form-modal-fechar svg {
+    width: 18px;
+    height: 18px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.form-modal-cabecalho {
+    padding-right: 50px;
+    margin-bottom: 32px;
+}
+
+.form-modal-tag {
+    display: inline-flex;
+
+    margin-bottom: 12px;
+    padding: 6px 11px;
+
+    border-radius: 999px;
+
+    background: #eef1ff;
+    color: #5668f5;
+
+    font-size: 10px;
+    font-weight: 750;
+
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.form-modal-cabecalho h2 {
+    margin: 0 0 8px;
+
+    color: #1d2440;
+
+    font-size: 34px;
+    line-height: 1.1;
+
+    letter-spacing: -0.04em;
+}
+
+.form-modal-cabecalho p {
+    margin: 0;
+
+    color: #969bad;
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.evento-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 19px;
+}
+
+.evento-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 15px;
+}
+
+.evento-form-campo {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.evento-form-campo label {
+    color: #34394e;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.evento-form-campo input,
+.evento-form-campo select {
+    width: 100%;
+    height: 52px;
+
+    padding: 0 15px;
+
+    border: 1px solid #e2e5ee;
+    border-radius: 13px;
+    outline: 0;
+
+    background: #ffffff;
+    color: #292e43;
+
+    font-family: inherit;
+    font-size: 13px;
+
+    transition:
+        border 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.evento-form-campo input:focus,
+.evento-form-campo select:focus {
+    border-color: #6070f6;
+
+    box-shadow:
+        0 0 0 4px rgba(86, 104, 245, 0.08);
+}
+
+.evento-form-campo input::placeholder {
+    color: #b4b8c5;
+}
+
+.evento-form-erro {
+    padding: 13px 15px;
+
+    border: 1px solid #ffdada;
+    border-radius: 11px;
+
+    background: #fff5f5;
+    color: #d34646;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.evento-form-acoes {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding-top: 10px;
+}
+
+.evento-form-acoes button {
+    min-width: 130px;
+    height: 46px;
+
+    padding: 0 18px;
+
+    border-radius: 12px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.evento-form-cancelar {
+    border: 1px solid #e1e4ee;
+
+    background: #ffffff;
+    color: #686d80;
+}
+
+.evento-form-salvar {
+    border: 0;
+
+    background: #5668f5;
+    color: #ffffff;
+
+    box-shadow:
+        0 9px 22px rgba(86, 104, 245, 0.2);
+}
+
+.evento-form-acoes button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+@keyframes eventoFormEntrada {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 650px) {
+    .form-modal-overlay {
+        align-items: flex-start;
+
+        padding: 0;
+
+        overflow-y: auto;
+    }
+
+    .form-modal {
+        width: 100%;
+        min-height: 100dvh;
+        max-height: none;
+
+        padding: 35px 22px;
+
+        border-radius: 0;
+    }
+
+    .evento-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .evento-form-acoes {
+        flex-direction: column-reverse;
+    }
+
+    .evento-form-acoes button {
+        width: 100%;
+    }
+
+    .evento-form-campo input:disabled {
+        background: #f5f6fa;
+        color: #8d92a4;
+
+        cursor: not-allowed;
+    }
+
+    .evento-form-campo label span {
+        color: #a1a6b6;
+        font-weight: 500;
+    }
+}
