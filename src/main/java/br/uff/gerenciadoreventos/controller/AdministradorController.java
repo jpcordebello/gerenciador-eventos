@@ -10,22 +10,35 @@ import org.springframework.web.bind.annotation.RestController;
 import br.uff.gerenciadoreventos.dto.AdministradorRequest;
 import br.uff.gerenciadoreventos.dto.AdministradorResponse;
 import br.uff.gerenciadoreventos.service.AdministradorService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/administradores")
 @RequiredArgsConstructor
+@Tag(
+        name = "Administradores",
+        description = "Cadastro dos administradores do sistema"
+)
 public class AdministradorController {
 
     private final AdministradorService administradorService;
 
     @PostMapping
+    @Operation(
+            summary = "Cadastrar administrador",
+            description = "Cria uma nova conta de administrador no sistema."
+    )
     public ResponseEntity<AdministradorResponse> cadastrar(
             @Valid @RequestBody AdministradorRequest request) {
 
-        AdministradorResponse response = administradorService.cadastrar(request);
+        AdministradorResponse response =
+                administradorService.cadastrar(request);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 }

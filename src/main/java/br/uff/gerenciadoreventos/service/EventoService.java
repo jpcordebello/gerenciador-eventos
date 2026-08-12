@@ -2,6 +2,10 @@ package br.uff.gerenciadoreventos.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,6 +14,7 @@ import org.springframework.stereotype.Service;
 import br.uff.gerenciadoreventos.dto.EventoRequest;
 import br.uff.gerenciadoreventos.dto.EventoResponse;
 import br.uff.gerenciadoreventos.dto.EventoUpdateRequest;
+import br.uff.gerenciadoreventos.dto.PaginaResponse;
 import br.uff.gerenciadoreventos.exception.RecursoNaoEncontradoException;
 import br.uff.gerenciadoreventos.exception.RegraNegocioException;
 import br.uff.gerenciadoreventos.model.Administrador;
@@ -57,13 +62,42 @@ public class EventoService {
         return converterParaResponse(salvo);
     }
 
-    public List<EventoResponse> listarTodos() {
+    public PaginaResponse<EventoResponse> listarTodos(
+            int page,
+            int size) {
 
-        return eventoRepository
-                .findAll()
+        if (page < 0) {
+            throw new RegraNegocioException(
+                    "O número da página não pode ser negativo");
+        }
+
+        if (size < 1 || size > 50) {
+            throw new RegraNegocioException(
+                    "O tamanho da página deve estar entre 1 e 50");
+        }
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("dataInicio").ascending());
+
+        Page<Evento> paginaEventos =
+                eventoRepository.findAll(pageable);
+
+        List<EventoResponse> conteudo = paginaEventos
+                .getContent()
                 .stream()
                 .map(this::converterParaResponse)
                 .toList();
+
+        return new PaginaResponse<>(
+                conteudo,
+                paginaEventos.getNumber(),
+                paginaEventos.getSize(),
+                paginaEventos.getTotalElements(),
+                paginaEventos.getTotalPages(),
+                paginaEventos.isFirst(),
+                paginaEventos.isLast());
     }
 
     public List<EventoResponse> listarPorAdministrador(Long adminId) {
