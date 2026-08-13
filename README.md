@@ -22,7 +22,9 @@ https://gerenciador-eventos-hc9f.onrender.com/swagger-ui/index.html
 
 APK gerado com Expo EAS Build.
 
-> Link para instalação será adicionado após a conclusão do build.
+**Instalação do APK:**
+
+https://expo.dev/accounts/jpcordebello/projects/mobile/builds/18c26b05-3e70-41d2-a7d7-73cf8fca5148
 
 ---
 
