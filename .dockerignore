@@ -1,0 +1,13 @@
+target
+frontend
+mobile
+.git
+.github
+.vscode
+.idea
+
+*.log
+
+.env
+.env.*
+!.env.example
