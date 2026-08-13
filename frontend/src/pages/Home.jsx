@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import '../App.css'
 
@@ -10,13 +10,12 @@ import {
     listarTodosEventos,
 } from '../services/eventoService'
 
-const API_URL = 'http://localhost:8080/eventos'
+const EVENTOS_POR_PAGINA = 12
 
 function Home() {
-    const [eventos, setEventos] = useState([])
+    const [todosEventos, setTodosEventos] = useState([])
+
     const [paginaAtual, setPaginaAtual] = useState(0)
-    const [totalPaginas, setTotalPaginas] = useState(0)
-    const [totalElementos, setTotalElementos] = useState(0)
 
     const [carregando, setCarregando] = useState(true)
     const [erro, setErro] = useState('')
@@ -27,18 +26,14 @@ function Home() {
     const [visualizacao, setVisualizacao] =
         useState('cards')
 
-    const [eventosCalendario, setEventosCalendario] =
-        useState([])
+    const [buscaDigitada, setBuscaDigitada] =
+        useState('')
 
-    const [
-        carregandoCalendario,
-        setCarregandoCalendario,
-    ] = useState(false)
+    const [termoBusca, setTermoBusca] =
+        useState('')
 
-    const [
-        calendarioCarregado,
-        setCalendarioCarregado,
-    ] = useState(false)
+    const [categoriaSelecionada, setCategoriaSelecionada] =
+        useState('TODOS')
 
     useEffect(() => {
         async function carregarEventos() {
@@ -46,21 +41,10 @@ function Home() {
                 setCarregando(true)
                 setErro('')
 
-                const resposta = await fetch(
-                    `${API_URL}?page=${paginaAtual}&size=12`,
-                )
+                const eventos =
+                    await listarTodosEventos()
 
-                if (!resposta.ok) {
-                    throw new Error(
-                        'Não foi possível carregar os eventos.',
-                    )
-                }
-
-                const dados = await resposta.json()
-
-                setEventos(dados.conteudo)
-                setTotalPaginas(dados.totalPaginas)
-                setTotalElementos(dados.totalElementos)
+                setTodosEventos(eventos)
             } catch (error) {
                 setErro(error.message)
             } finally {
@@ -69,29 +53,15 @@ function Home() {
         }
 
         carregarEventos()
-    }, [paginaAtual])
+    }, [])
 
-    async function abrirCalendario() {
-        setVisualizacao('calendario')
-
-        if (calendarioCarregado) {
-            return
-        }
-
-        try {
-            setCarregandoCalendario(true)
-            setErro('')
-
-            const todosEventos =
-                await listarTodosEventos()
-
-            setEventosCalendario(todosEventos)
-            setCalendarioCarregado(true)
-        } catch (error) {
-            setErro(error.message)
-        } finally {
-            setCarregandoCalendario(false)
-        }
+    function normalizarTexto(texto = '') {
+        return texto
+            .toString()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim()
     }
 
     function formatarData(data) {
@@ -127,6 +97,86 @@ function Home() {
         }
 
         return categorias[categoria] ?? categoria
+    }
+
+    const eventosFiltrados = useMemo(() => {
+        const buscaNormalizada =
+            normalizarTexto(termoBusca)
+
+        return todosEventos.filter((evento) => {
+            const correspondeCategoria =
+                categoriaSelecionada === 'TODOS' ||
+                evento.categoria ===
+                    categoriaSelecionada
+
+            if (!correspondeCategoria) {
+                return false
+            }
+
+            if (!buscaNormalizada) {
+                return true
+            }
+
+            const textoEvento = normalizarTexto(
+                [
+                    evento.nome,
+                    evento.localizacao,
+                    evento.endereco,
+                    formatarCategoria(
+                        evento.categoria,
+                    ),
+                ]
+                    .filter(Boolean)
+                    .join(' '),
+            )
+
+            return textoEvento.includes(
+                buscaNormalizada,
+            )
+        })
+    }, [
+        todosEventos,
+        termoBusca,
+        categoriaSelecionada,
+    ])
+
+    const totalElementos =
+        eventosFiltrados.length
+
+    const totalPaginas = Math.ceil(
+        totalElementos / EVENTOS_POR_PAGINA,
+    )
+
+    const eventosPagina = useMemo(() => {
+        const inicio =
+            paginaAtual * EVENTOS_POR_PAGINA
+
+        const fim =
+            inicio + EVENTOS_POR_PAGINA
+
+        return eventosFiltrados.slice(
+            inicio,
+            fim,
+        )
+    }, [
+        eventosFiltrados,
+        paginaAtual,
+    ])
+
+    function buscarEventos() {
+        setTermoBusca(buscaDigitada)
+        setPaginaAtual(0)
+    }
+
+    function tratarEnter(event) {
+        if (event.key === 'Enter') {
+            buscarEventos()
+        }
+    }
+
+    function selecionarCategoria(categoria) {
+        setCategoriaSelecionada(categoria)
+        setPaginaAtual(0)
     }
 
     function mudarPagina(novaPagina) {
@@ -178,45 +228,105 @@ function Home() {
                                 type="text"
                                 placeholder="Buscar eventos..."
                                 aria-label="Buscar eventos"
+                                value={buscaDigitada}
+                                onChange={(event) =>
+                                    setBuscaDigitada(
+                                        event.target.value,
+                                    )
+                                }
+                                onKeyDown={tratarEnter}
                             />
 
-                            <button type="button">
+                            <button
+                                type="button"
+                                onClick={buscarEventos}
+                            >
                                 Buscar
                             </button>
                         </div>
 
                         <div className="categorias">
                             <button
-                                className="categoria ativa"
+                                className={
+                                    categoriaSelecionada ===
+                                    'TODOS'
+                                        ? 'categoria ativa'
+                                        : 'categoria'
+                                }
                                 type="button"
+                                onClick={() =>
+                                    selecionarCategoria(
+                                        'TODOS',
+                                    )
+                                }
                             >
                                 Todos
                             </button>
 
                             <button
-                                className="categoria"
+                                className={
+                                    categoriaSelecionada ===
+                                    'CULTURAL'
+                                        ? 'categoria ativa'
+                                        : 'categoria'
+                                }
                                 type="button"
+                                onClick={() =>
+                                    selecionarCategoria(
+                                        'CULTURAL',
+                                    )
+                                }
                             >
                                 Cultural
                             </button>
 
                             <button
-                                className="categoria"
+                                className={
+                                    categoriaSelecionada ===
+                                    'ESPORTE'
+                                        ? 'categoria ativa'
+                                        : 'categoria'
+                                }
                                 type="button"
+                                onClick={() =>
+                                    selecionarCategoria(
+                                        'ESPORTE',
+                                    )
+                                }
                             >
                                 Esporte
                             </button>
 
                             <button
-                                className="categoria"
+                                className={
+                                    categoriaSelecionada ===
+                                    'GASTRONOMICO'
+                                        ? 'categoria ativa'
+                                        : 'categoria'
+                                }
                                 type="button"
+                                onClick={() =>
+                                    selecionarCategoria(
+                                        'GASTRONOMICO',
+                                    )
+                                }
                             >
                                 Gastronômico
                             </button>
 
                             <button
-                                className="categoria"
+                                className={
+                                    categoriaSelecionada ===
+                                    'LAZER'
+                                        ? 'categoria ativa'
+                                        : 'categoria'
+                                }
                                 type="button"
+                                onClick={() =>
+                                    selecionarCategoria(
+                                        'LAZER',
+                                    )
+                                }
                             >
                                 Lazer
                             </button>
@@ -242,19 +352,25 @@ function Home() {
 
                             <div className="agenda-controles">
                                 <p>
-                                    {totalElementos} eventos cadastrados
+                                    {totalElementos}{' '}
+                                    {totalElementos === 1
+                                        ? 'evento encontrado'
+                                        : 'eventos encontrados'}
                                 </p>
 
                                 <div className="visualizacao-opcoes">
                                     <button
                                         type="button"
                                         className={
-                                            visualizacao === 'cards'
+                                            visualizacao ===
+                                            'cards'
                                                 ? 'ativa'
                                                 : ''
                                         }
                                         onClick={() =>
-                                            setVisualizacao('cards')
+                                            setVisualizacao(
+                                                'cards',
+                                            )
                                         }
                                     >
                                         <svg
@@ -298,11 +414,15 @@ function Home() {
                                         type="button"
                                         className={
                                             visualizacao ===
-                                                'calendario'
+                                            'calendario'
                                                 ? 'ativa'
                                                 : ''
                                         }
-                                        onClick={abrirCalendario}
+                                        onClick={() =>
+                                            setVisualizacao(
+                                                'calendario',
+                                            )
+                                        }
                                     >
                                         <svg
                                             viewBox="0 0 24 24"
@@ -340,88 +460,102 @@ function Home() {
 
                                 {!carregando &&
                                     !erro &&
-                                    eventos.length === 0 && (
+                                    eventosFiltrados.length ===
+                                        0 && (
                                         <div className="estado">
-                                            Nenhum evento encontrado.
+                                            Nenhum evento
+                                            encontrado.
                                         </div>
                                     )}
 
                                 {!carregando &&
                                     !erro &&
-                                    eventos.length > 0 && (
+                                    eventosPagina.length > 0 && (
                                         <div className="grade-eventos">
-                                            {eventos.map((evento) => (
-                                                <article
-                                                    className="card-evento"
-                                                    key={evento.id}
-                                                >
-                                                    <div className="card-imagem">
-                                                        <img
-                                                            src={evento.imagem}
-                                                            alt={evento.nome}
-                                                        />
+                                            {eventosPagina.map(
+                                                (evento) => (
+                                                    <article
+                                                        className="card-evento"
+                                                        key={
+                                                            evento.id
+                                                        }
+                                                    >
+                                                        <div className="card-imagem">
+                                                            <img
+                                                                src={
+                                                                    evento.imagem
+                                                                }
+                                                                alt={
+                                                                    evento.nome
+                                                                }
+                                                            />
 
-                                                        <span className="card-categoria">
-                                                            {formatarCategoria(
-                                                                evento.categoria,
-                                                            )}
-                                                        </span>
-
-                                                        <div className="card-data">
-                                                            {formatarData(
-                                                                evento.dataInicio,
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="card-conteudo">
-                                                        <p className="card-periodo">
-                                                            {formatarPeriodo(
-                                                                evento.dataInicio,
-                                                                evento.dataFim,
-                                                            )}
-                                                        </p>
-
-                                                        <h3>
-                                                            {evento.nome}
-                                                        </h3>
-
-                                                        <div className="card-local">
-                                                            <span>
-                                                                ●
+                                                            <span className="card-categoria">
+                                                                {formatarCategoria(
+                                                                    evento.categoria,
+                                                                )}
                                                             </span>
 
-                                                            <p>
-                                                                {evento.localizacao}
+                                                            <div className="card-data">
+                                                                {formatarData(
+                                                                    evento.dataInicio,
+                                                                )}
+                                                            </div>
+                                                        </div>
 
-                                                                {evento.endereco && (
-                                                                    <small>
-                                                                        {
-                                                                            evento.endereco
-                                                                        }
-                                                                    </small>
+                                                        <div className="card-conteudo">
+                                                            <p className="card-periodo">
+                                                                {formatarPeriodo(
+                                                                    evento.dataInicio,
+                                                                    evento.dataFim,
                                                                 )}
                                                             </p>
+
+                                                            <h3>
+                                                                {
+                                                                    evento.nome
+                                                                }
+                                                            </h3>
+
+                                                            <div className="card-local">
+                                                                <span>
+                                                                    ●
+                                                                </span>
+
+                                                                <p>
+                                                                    {
+                                                                        evento.localizacao
+                                                                    }
+
+                                                                    {evento.endereco && (
+                                                                        <small>
+                                                                            {
+                                                                                evento.endereco
+                                                                            }
+                                                                        </small>
+                                                                    )}
+                                                                </p>
+                                                            </div>
+
+                                                            <button
+                                                                className="card-link"
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    setEventoSelecionado(
+                                                                        evento,
+                                                                    )
+                                                                }
+                                                            >
+                                                                Ver detalhes
+
+                                                                <span>
+                                                                    →
+                                                                </span>
+                                                            </button>
                                                         </div>
-
-                                                        <button
-                                                            className="card-link"
-                                                            type="button"
-                                                            onClick={() =>
-                                                                setEventoSelecionado(
-                                                                    evento,
-                                                                )
-                                                            }
-                                                        >
-                                                            Ver detalhes
-
-                                                            <span>
-                                                                →
-                                                            </span>
-                                                        </button>
-                                                    </div>
-                                                </article>
-                                            ))}
+                                                    </article>
+                                                ),
+                                            )}
                                         </div>
                                     )}
 
@@ -432,7 +566,8 @@ function Home() {
                                                 type="button"
                                                 onClick={() =>
                                                     mudarPagina(
-                                                        paginaAtual - 1,
+                                                        paginaAtual -
+                                                            1,
                                                     )
                                                 }
                                                 disabled={
@@ -448,13 +583,18 @@ function Home() {
                                                     length:
                                                         totalPaginas,
                                                 },
-                                                (_, indice) => (
+                                                (
+                                                    _,
+                                                    indice,
+                                                ) => (
                                                     <button
                                                         type="button"
-                                                        key={indice}
+                                                        key={
+                                                            indice
+                                                        }
                                                         className={
                                                             paginaAtual ===
-                                                                indice
+                                                            indice
                                                                 ? 'ativa'
                                                                 : ''
                                                         }
@@ -464,7 +604,8 @@ function Home() {
                                                             )
                                                         }
                                                     >
-                                                        {indice + 1}
+                                                        {indice +
+                                                            1}
                                                     </button>
                                                 ),
                                             )}
@@ -473,12 +614,14 @@ function Home() {
                                                 type="button"
                                                 onClick={() =>
                                                     mudarPagina(
-                                                        paginaAtual + 1,
+                                                        paginaAtual +
+                                                            1,
                                                     )
                                                 }
                                                 disabled={
                                                     paginaAtual ===
-                                                    totalPaginas - 1
+                                                    totalPaginas -
+                                                        1
                                                 }
                                                 aria-label="Próxima página"
                                             >
@@ -491,39 +634,39 @@ function Home() {
 
                         {visualizacao ===
                             'calendario' && (
-                                <>
-                                    {carregandoCalendario && (
-                                        <div className="estado">
-                                            Montando calendário...
-                                        </div>
+                            <>
+                                {carregando && (
+                                    <div className="estado">
+                                        Montando calendário...
+                                    </div>
+                                )}
+
+                                {!carregando &&
+                                    !erro &&
+                                    eventosFiltrados.length >
+                                        0 && (
+                                        <CalendarioEventos
+                                            eventos={
+                                                eventosFiltrados
+                                            }
+                                            onSelecionarEvento={
+                                                setEventoSelecionado
+                                            }
+                                        />
                                     )}
 
-                                    {!carregandoCalendario &&
-                                        !erro &&
-                                        eventosCalendario.length >
+                                {!carregando &&
+                                    !erro &&
+                                    eventosFiltrados.length ===
                                         0 && (
-                                            <CalendarioEventos
-                                                eventos={
-                                                    eventosCalendario
-                                                }
-                                                onSelecionarEvento={
-                                                    setEventoSelecionado
-                                                }
-                                            />
-                                        )}
-
-                                    {!carregandoCalendario &&
-                                        !erro &&
-                                        calendarioCarregado &&
-                                        eventosCalendario.length ===
-                                        0 && (
-                                            <div className="estado">
-                                                Nenhum evento disponível
-                                                no calendário.
-                                            </div>
-                                        )}
-                                </>
-                            )}
+                                        <div className="estado">
+                                            Nenhum evento
+                                            disponível no
+                                            calendário.
+                                        </div>
+                                    )}
+                            </>
+                        )}
                     </div>
                 </section>
             </main>

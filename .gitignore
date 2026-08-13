@@ -32,8 +32,19 @@ build/
 ### VS Code ###
 .vscode/
 
-### Variáveis de ambiente
+# ============================================================
+# Projeto acadêmico
+# ============================================================
+# Os arquivos .env abaixo são versionados intencionalmente
+# para facilitar a execução e avaliação do desafio técnico.
 
-.env
-.env.*
+!.env
+!frontend/.env
+!mobile/.env
+
 !.env.example
+!frontend/.env.example
+!mobile/.env.example
+
+
+

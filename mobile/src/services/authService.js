@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL = process.env.EXPO_PUBLIC_API_URL
 
 export async function login(email, senha) {
     const resposta = await fetch(`${API_URL}/auth/login`, {
@@ -16,25 +16,10 @@ export async function login(email, senha) {
 
     if (!resposta.ok) {
         throw new Error(
-            dados.mensagem || 'Não foi possível realizar o login.',
+            dados.mensagem ||
+                'Não foi possível realizar o login.',
         )
     }
 
     return dados
-}
-
-export function salvarToken(token) {
-    localStorage.setItem('token', token)
-}
-
-export function obterToken() {
-    return localStorage.getItem('token')
-}
-
-export function removerToken() {
-    localStorage.removeItem('token')
-}
-
-export function estaAutenticado() {
-    return Boolean(obterToken())
 }

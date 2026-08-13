@@ -1,7 +1,9 @@
 package br.uff.gerenciadoreventos.config;
 
+import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -10,34 +12,40 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
-    @Bean
-    UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        @Value("${app.cors.allowed-origins}")
+        private String allowedOrigins;
 
-        CorsConfiguration configuration = new CorsConfiguration();
+        @Bean
+        UrlBasedCorsConfigurationSource corsConfigurationSource() {
 
-        configuration.setAllowedOrigins(
-                List.of("http://localhost:5173"));
+                CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "OPTIONS"));
+                List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                                .map(String::trim)
+                                .filter(origin -> !origin.isBlank())
+                                .toList();
 
-        configuration.setAllowedHeaders(
-                List.of("*"));
+                configuration.setAllowedOrigins(origins);
 
-        configuration.setAllowCredentials(true);
+                configuration.setAllowedMethods(
+                                List.of(
+                                                "GET",
+                                                "POST",
+                                                "PUT",
+                                                "DELETE",
+                                                "OPTIONS"));
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+                configuration.setAllowedHeaders(
+                                List.of("*"));
 
-        source.registerCorsConfiguration(
-                "/**",
-                configuration);
+                configuration.setAllowCredentials(true);
 
-        return source;
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+                source.registerCorsConfiguration(
+                                "/**",
+                                configuration);
+
+                return source;
+        }
 }
